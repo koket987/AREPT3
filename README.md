@@ -70,7 +70,8 @@ mvn test
 
 Verifican que:
 - **GET** `http://localhost:35000/App/rests/greeting?name=Santiago` devuelve `{"message": "Hola Santiago"}`.
-- **GET** `http://localhost:35000/App/pi` devuelve `3.141592653589793`.
+
+
 - Los archivos estáticos se sirven correctamente.
 
 ### Pruebas de Extremo a Extremo
@@ -88,6 +89,8 @@ Respuesta esperada:
 ```json
 {"message": "Hola Santiago"}
 ```
+![image](https://github.com/user-attachments/assets/79443b89-db15-4482-9438-d9d8eda84666)
+
 
 #### Archivos Estáticos
 Accede desde un navegador a:
