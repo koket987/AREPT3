@@ -1,153 +1,124 @@
-# Servidor Web en Java coon un MiniFrameWork
+# Servidor Web en Java
 
-Este proyecto es un servidor web simple implementado en Java sin utilizar frameworks externos. Permite servir archivos estáticos (HTML, CSS, JS, imágenes) y proporciona una API REST para interacciones básicas, configurada mediante expresiones lambda.
+Este proyecto es un servidor web simple implementado en Java sin utilizar frameworks externos. Permite servir archivos estáticos (HTML, CSS, JS, imágenes) y proporciona una API REST para interacciones básicas, configurada mediante anotaciones y expresiones lambda.
 
 ## Características
-- **Registrar endpoints REST**: usando métodos como `get()` para definir servicios.
-- **Extraer parámetros de consulta**: a través de la clase `HttpRequest`.
-- **Servir archivos estáticos**: configurando el directorio de archivos con `staticfiles()`.
+- **Registrar endpoints REST**: usando anotaciones como `@GetMapping`.
+- **Extraer parámetros de consulta**: mediante `@RequestParam`.
+- **Autodescubrimiento de controladores**: Carga automáticamente clases anotadas con `@RestController`.
+- **Soporte para JSON**: Las respuestas se devuelven en formato JSON.
+- **Servir archivos estáticos**: Configura el directorio de archivos con `staticfiles()`.
 
-En este ejemplo, se utiliza el prefijo **/App** para los endpoints REST. Por ejemplo:
-- `http://localhost:8080/App/hello?name=Pedro` responderá con un saludo.
-- `http://localhost:8080/App/pi` responderá con el valor de PI.
-  
-Las solicitudes que no comiencen con **/App** se tratarán como peticiones de archivos estáticos.
+## Prerrequisitos
+Asegúrate de tener instalado:
+- **Java 8 o superior**
+- **Apache Maven**
+- **Git**
 
-## Comenzando
+## Instalación
+### Clonar y Construir el Proyecto
+```bash
+git clone https://github.com/Koket987/AREPTALLER1.git
+cd AREPTALLER1
+mvn clean install
+```
 
-Sigue estas instrucciones para configurar y ejecutar el proyecto en tu máquina local para desarrollo y pruebas.
+## Cómo Ejecutar
+### Compilar el Proyecto
+Utiliza Maven, Gradle o tu IDE preferido para compilar las clases.
 
-### Prerrequisitos
+### Ejecutar el Servidor
+Para cargar el controlador desde la línea de comandos, ejecuta:
+```bash
+java -cp target/classes co.edu.eci.arep.HttpServer co.edu.eci.arep.GreetingController
+```
+Esto registra el `GreetingController` y mapea el método con `@GetMapping("/greeting")`.
 
-Asegúrate de tener instalado lo siguiente:
+### Probar el Servicio REST
+Abre en el navegador, usa PostMan o utiliza `curl` la siguiente URL:
+```bash
+http://localhost:35000/App/rests/greeting?name=Juan
+```
+La respuesta será similar a:
+```json
+{"message": "Hola Juan"}
+```
 
-- Java 8 o superior
-- Apache Maven
-- Git para clonar el repositorio
-- Una terminal o línea de comandos
+### Servir Archivos Estáticos
+Si tienes un archivo `index.html` en `src/main/resources/www`, podrás acceder a él vía:
+```bash
+http://localhost:35000/App/index.html
+```
 
-### Instalación
+## Diseño del Sistema
+- **Manejo de solicitudes HTTP**: Soporta métodos `GET` y `POST`, diferenciando entre peticiones REST (prefijo `/App`) y solicitudes de archivos estáticos.
+- **Manejo de archivos estáticos**: Permite servir HTML, CSS, JavaScript e imágenes desde un directorio configurado.
+- **Endpoints REST**: Permite registrar servicios REST de forma sencilla mediante anotaciones.
 
-1. Clona este repositorio y navega al directorio del proyecto:
-
-   ```bash
-   git clone https://github.com/Koket987/AREPTALLER1.git
-   cd AREPTALLER1
-   ```
-
-2. Compila y construye el proyecto con Maven:
-
-   ```bash
-   mvn clean install
-   ```
-
-3. Ejecuta el servidor:
-
-   ```bash
-   mvn exec:java -Dexec.mainClass="co.edu.eci.arep.HttpServer"
-   ```
+Las principales clases del código son:
+- `HttpRequest.java`: Procesa y parsea la petición HTTP.
+- `HttpResponse.java`: Permite gestionar la respuesta HTTP.
+- `HttpServer.java`: Implementa el framework y maneja la configuración.
+- `ExampleApp.java`: Ejemplo de aplicación que utiliza el framework.
 
 ## Pruebas
-
 ### Pruebas Unitarias
-
-Este proyecto incluye pruebas unitarias con JUnit 5. Para ejecutarlas, usa:
-
+Ejecuta las pruebas con:
 ```bash
 mvn test
 ```
 
-Las pruebas verifican, entre otros casos, que:
-- **GET** `http://localhost:8080/App/hello?name=Santiago` devuelve **Hello Santiago**.
-- **GET** `http://localhost:8080/App/pi` devuelve **3.141592653589793**.
+Verifican que:
+- **GET** `http://localhost:35000/App/rests/greeting?name=Santiago` devuelve `{"message": "Hola Santiago"}`.
+- **GET** `http://localhost:35000/App/pi` devuelve `3.141592653589793`.
 - Los archivos estáticos se sirven correctamente.
 
-### Pruebas de extremo a extremo
-
-Puedes probar el servidor abriendo un navegador y accediendo a:
-
+### Pruebas de Extremo a Extremo
+Prueba el servidor accediendo a:
 ```bash
-http://localhost:8080
+http://localhost:35000
 ```
 
 #### API REST
-
-Utiliza `curl` desde tu terminal favorita para probar los endpoints de la API:
-
-- **GET** (Saludo):  
-  ```bash
-  curl -X GET "http://localhost:8080/App/hello?name=Santiago"
-  ```
-  Respuesta esperada:
-  ```
-  Hello Santiago
-  ```
-
-- **GET** (Valor de PI):  
-  ```bash
-  curl -X GET "http://localhost:8080/App/pi"
-  ```
-  Respuesta esperada:
-  ```
-  3.141592653589793
-  ```
+Con `curl`:
+```bash
+curl -X GET "http://localhost:35000/App/rests/greeting?name=Santiago"
+```
+Respuesta esperada:
+```json
+{"message": "Hola Santiago"}
+```
 
 #### Archivos Estáticos
-
-Accede a los archivos incluidos desde cualquier navegador, por ejemplo:
-
-- `http://localhost:8080/App/index.html`
-- `http://localhost:8080/styles.css`
-- `http://localhost:8080/script.js`
-- `http://localhost:8080/images/example1.png`
-
-## Diseño del Sistema
-
-El servidor sigue un diseño modular que permite la extensión de funcionalidades:
-
-- **Manejo de solicitudes HTTP**: Soporta métodos `GET` y `POST`, diferenciando entre peticiones REST (prefijo `/App`) y solicitudes de archivos estáticos.
-- **Manejo de archivos estáticos**: Permite servir HTML, CSS, JavaScript e imágenes desde un directorio configurado.
-- **Endpoints REST**: Permite registrar servicios REST de forma sencilla mediante expresiones lambda.
-
-El código se encuentra estructurado en las siguientes clases:
-- `HttpRequest.java`: Procesa y parsea la petición HTTP.
-- `HttpResponse.java`: Permite gestionar la respuesta HTTP.
-- `HttpServer.java`: Implementa el framework, con métodos para registrar endpoints (`get()`, `post()`), configurar archivos estáticos (`staticfiles()`) y arrancar el servidor (`start()`).
-- `ExampleApp.java`: Ejemplo de aplicación que utiliza el framework.
+Accede desde un navegador a:
+```bash
+http://localhost:35000/App/index.html
+```
 
 ## Despliegue
-
-Para uso en producción, considera ejecutar el servidor como un proceso en segundo plano o configurar un servicio systemd:
-
+Para ejecutar el servidor en segundo plano:
 ```bash
-nohup mvn exec:java -Dexec.mainClass="co.edu.eci.arep.ExampleApp" &
+nohup mvn exec:java -Dexec.mainClass="co.edu.eci.arep.HttpServer" &
 ```
 
 ## Construido Con
-
 - **Java** - Lenguaje principal utilizado.
-- **Maven** - Para la gestión de dependencias y automatización.
-- **Biblioteca estándar de Java** - Para manejo de red y archivos.
+- **Maven** - Para la gestión de dependencias.
 - **JUnit** - Para pruebas automatizadas.
 
 ## Contribuciones
-
-Siéntete libre de hacer fork y enviar pull requests para mejorar el proyecto. Las contribuciones son bienvenidas.
+Siéntete libre de hacer fork y enviar pull requests para mejorar el proyecto.
 
 ## Versionado
-
-Este proyecto sigue [SemVer](http://semver.org/) para la gestión de versiones. Consulta los [tags en este repositorio](https://github.com/Koket987/AREPTALLER1/tags) para versiones disponibles.
+Este proyecto sigue [SemVer](http://semver.org/). Consulta los [tags en este repositorio](https://github.com/Koket987/AREPTALLER1/tags) para versiones disponibles.
 
 ## Autor
-
 * **Santiago** - *Trabajo inicial* - [GitHub Personal](https://github.com/koket987)
 
 ## Licencia
-
 Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
 ## Agradecimientos
-
 - Inspiración de implementaciones de servidores web minimalistas.
 - Comunidad de código abierto por las mejores prácticas.
 
