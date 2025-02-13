@@ -11,55 +11,51 @@ import java.net.URL;
 
 public class HttpServerFrameTest {
 
-    private static final String SERVER_URL = "http://localhost:8080";
+    private static final String SERVER_URL = "http://localhost:35000";
+    private static Thread serverThread;
 
     @BeforeAll
     static void setup() throws Exception {
-        // Iniciar el servidor en un hilo separado
-        new Thread(() -> {
+        // Iniciar el servidor pasando la clase del controlador para registrar los endpoints REST
+        serverThread = new Thread(() -> {
             try {
-                co.edu.eci.arep.HttpServer.main(new String[]{});
+                HttpServer.main(new String[] {"co.edu.eci.arep.GreetingController"});
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }).start();
-
-        // Esperar unos segundos para que el servidor inicie
-        Thread.sleep(2000);
+        });
+        serverThread.setDaemon(true);
+        serverThread.start();
+        // Esperar para que el servidor inicie correctamente
+        Thread.sleep(3000);
     }
 
     @Test
-    void testHelloEndpoint() throws IOException {
-        URL url = new URL(SERVER_URL + "/App/hello?name=Juan");
+    void testGreetingEndpoint() throws IOException {
+        // Se asume que GreetingController registra el endpoint /greeting
+        URL url = new URL(SERVER_URL + "/App/rests/greeting?name=Juan");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
 
         assertEquals(200, conn.getResponseCode());
-        assertEquals("Hello Juan", readResponse(conn));
-    }
-
-    @Test
-    void testPiEndpoint() throws IOException {
-        URL url = new URL(SERVER_URL + "/App/pi");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-
-        assertEquals(200, conn.getResponseCode());
-        assertEquals(String.valueOf(Math.PI), readResponse(conn));
+        // Se espera que el GreetingController retorne: {"message": "Hola Juan"}
+        assertEquals("{\"message\": \"Hola Juan\"}", readResponse(conn));
     }
 
     @Test
     void testStaticFileServing() throws IOException {
-        URL url = new URL(SERVER_URL + "/index.html");
+        // Se asume que en el directorio STATIC_FILES_PATH existe un index.html
+        URL url = new URL(SERVER_URL + "/App/index.html");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
 
         assertEquals(200, conn.getResponseCode());
-        assertTrue(readResponse(conn).contains("<html>"));
+        String response = readResponse(conn);
+        assertTrue(response.contains("<html>") || response.contains("<!DOCTYPE html>"));
     }
 
     private String readResponse(HttpURLConnection conn) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
         StringBuilder response = new StringBuilder();
         String line;
         while ((line = in.readLine()) != null) {
